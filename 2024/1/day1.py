@@ -1,19 +1,18 @@
-f = open("input.txt")
-
 l1 = []
 l2 = []
 occur = {}
 
-for line in f:
-    s = line.split("   ")
-    i1 = int(s[0])
-    i2 = int(s[1])
+with open("input.txt") as f:
+    for line in f:
+        s = line.split("   ")
+        i1 = int(s[0])
+        i2 = int(s[1])
 
-    l1.append(i1)
-    l2.append(i2)
-    if i2 not in occur:
-        occur[i2] = 0
-    occur[i2] += 1
+        l1.append(i1)
+        l2.append(i2)
+        if i2 not in occur:
+            occur[i2] = 0
+        occur[i2] += 1
 
 l1.sort()
 l2.sort()
