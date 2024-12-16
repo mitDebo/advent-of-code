@@ -29,9 +29,6 @@ def is_safe(l: list) -> bool:
     return True
 
 def is_tolerance_safe(l: list) -> bool:
-    if is_safe(l):
-        return True
-
     for i in range(len(l)):
         tolerance_list = l[:i] + l[i+1:]
         if is_safe(tolerance_list):
