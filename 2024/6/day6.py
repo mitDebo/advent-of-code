@@ -1,8 +1,17 @@
+import copy
+
 class Guard:
     def __init__(self, y:int, x:int, direction:str):
+        self.__original_y = y
+        self.__original_x = x
+        self.__original_direction = direction
+
         self.x = x
         self.y = y
         self.direction = direction
+
+        self.visited = [(y, x, "^")]
+        self.is_looping = False
 
     def rotate(self):
         if self.direction == "^":
@@ -13,6 +22,7 @@ class Guard:
             self.direction = "<"
         elif self.direction == "<":
             self.direction = "^"
+        self.__append_visited()
 
     def update(self):
         if self.direction == "^":
@@ -23,6 +33,25 @@ class Guard:
             self.y += 1
         elif self.direction == "<":
             self.x -= 1
+        self.__append_visited()
+
+    def is_stuck(self):
+        return self.is_looping
+
+    def reset(self):
+        self.x = self.__original_x
+        self.y = self.__original_y
+        self.direction = self.__original_direction
+
+        self.visited = [(self.y, self.x, self.direction)]
+        self.is_looping = False
+
+
+    def __append_visited(self):
+        n = (self.y, self.x, self.direction)
+        if n in self.visited:
+            self.is_looping = True
+        self.visited.append(n)
 
 
 def is_guard_on_board(g:Guard, b:list) -> bool:
@@ -50,17 +79,17 @@ def update_board(g:Guard, b:list) -> None:
         b[g.y][g.x] = g.direction
         return
 
-    b[g.y][g.x] = "X"
+    # b[g.y][g.x] = 'X'
     g.update()
     if is_guard_on_board(g, b):
         b[g.y][g.x] = g.direction
 
 
 def print_board(b:list) -> None:
-    for row in b:
-        print(''.join(row))
+    for r in b:
+        print(''.join(r))
 
-board = []
+original_board = []
 row_num = 0
 
 with open("input.txt") as f:
@@ -69,16 +98,34 @@ with open("input.txt") as f:
         if '^' in row:
             guard = Guard(row_num, row.index('^'), "^")
 
-        board.append(row)
+        original_board.append(row)
         row_num += 1
 
-while is_guard_on_board(guard, board):
+board = copy.deepcopy(original_board)
+while is_guard_on_board(guard, board) and not guard.is_stuck():
     update_board(guard, board)
 
-total = 0
+visited = 0
 for row in board:
     for cell in row:
-        if cell == 'X':
-            total += 1
+        if cell in ['X', '^', '>', 'v', '<']:
+            visited += 1
 
-print("Answer one: {}".format(total))
+loop_totals = 0
+for y, row in enumerate(original_board):
+    for x, cell in enumerate(row):
+        print("attempting {y}, {x}".format(y=y, x=x))
+        new_board = copy.deepcopy(original_board)
+        if new_board[y][x] == '#' or new_board[y][x] == '^':
+            continue
+
+        guard.reset()
+        new_board[y][x] = '#'
+        while is_guard_on_board(guard, new_board) and not guard.is_stuck():
+            update_board(guard, new_board)
+
+        if guard.is_stuck():
+            loop_totals += 1
+
+print("Answer one: {}".format(visited))
+print("Answer two: {}".format(loop_totals))
