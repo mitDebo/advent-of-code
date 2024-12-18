@@ -1,23 +1,38 @@
-total = 0
+from itertools import product
+
+two_ops_total = 0
+three_ops_total = 0
 
 with open("input.txt") as f:
-    for line in f:
-        line = line.strip()
-        l = line.split(":")
+    lines = f.read().strip().split("\n")
 
-        goal = int(l[0])
-        terms = l[1].strip().split()
+for line in lines:
+    values = line.split()
+    answer = int(values[0][:-1])
+    nums = list(map(int, values[1:]))
 
-        for op in range(2 ** len(terms) - 1):
-            running_total = 0
-            for i, term in enumerate(terms):
-                if i == 0:
-                    running_total = int(term)
-                    continue
-                running_total = running_total + int(term) if (op >> i & 1) else running_total * int(term)
+    def evaluate(operations:tuple) -> int:
+        t = nums[0]
+        for i, op in enumerate(operations):
+            if op == "+":
+                t += nums[i + 1]
+            elif op =="*":
+                t *= nums[i + 1]
+            elif op == "|":
+                t = int(str(t) + str(nums[i + 1]))
 
-            if running_total == goal:
-                total += running_total
-                break
+        return t
 
-print("Answer one: {}".format(total))
+    for op_str in product("+*", repeat=len(nums) - 1):
+        if evaluate(op_str) == answer:
+            two_ops_total += answer
+            break
+
+    for op_str in product("+*|", repeat=len(nums) - 1):
+        if evaluate(op_str) == answer:
+            print(f"WORKED! {answer} = {op_str}")
+            three_ops_total += answer
+            break
+
+print("Answer one: {}".format(two_ops_total))
+print("Answer two: {}".format(three_ops_total))
